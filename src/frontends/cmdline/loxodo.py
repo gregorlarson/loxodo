@@ -24,6 +24,7 @@ from getpass import getpass
 import readline
 import cmd
 import re
+import time
 try:
     import pygtk
     import gtk
@@ -155,7 +156,10 @@ class InteractiveConsole(cmd.Cmd):
             return
 
         for record in vault_records:
-            print record.title.encode('utf-8', 'replace') + " [" + record.user.encode('utf-8', 'replace') + "]"
+	     print "%-30s %30s %14s" % (
+	        record.title.encode('utf-8', 'replace')[:29],
+		record.user.encode('utf-8', 'replace')[:29],
+		time.strftime('%Y/%m/%d',time.gmtime(record.last_mod)))
 
     def do_show(self, line, echo=True, passwd=False):
         """
