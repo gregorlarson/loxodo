@@ -42,6 +42,7 @@ class InteractiveConsole(cmd.Cmd):
         self.tabcomp = True
         self.echo = False
         self.mod = False
+        self.uuid = False
         # options for sorting are 'alpha' and 'mod'
         self.sort_key = 'alpha'
         # options are brief or verbose
@@ -403,8 +404,11 @@ class InteractiveConsole(cmd.Cmd):
 
     def do_ls(self, line):
         """
-        Show contents of this Vault. If an argument is added a case insensitive
-        search of titles is done, entries can also be specified as regular expressions.
+        Show contents of this Vault, one entry per line.
+        If an argument is added a case insensitive search of titles
+        is done, entries can also be specified as regular expressions.
+        Additional uuid columns is output if uuid enabled, however,
+        terminal should be 113 columns or more wide.
         """
         if not self.vault:
             raise RuntimeError("No vault opened")
@@ -423,25 +427,15 @@ class InteractiveConsole(cmd.Cmd):
         elif self.sort_key == 'mod':
             vault_records.sort(lambda e1, e2: cmp(e1.last_mod, e2.last_mod))
 
-        print ""
-        print "[group.title] username"
-        print "URL: url"
-        print "Notes: notes"
-        print "Last mod: modification time"
-        print "-"*10
         for record in vault_records:
-            print "[%s.%s] %s" % (record.group.encode('utf-8', 'replace'),
-                                   record.title.encode('utf-8', 'replace'),
-                                   record.user.encode('utf-8', 'replace'))
-            if self.output == 'verbose':
-                if record.url:
-                    print "    URL: %s" % (record.url.encode('utf-8', 'replace'))
-                if record.notes:
-                    print "    Notes: %s" % (record.notes.encode('utf-8', 'replace'))
-                if record.last_mod != 0:
-                    print "    Last mod: %s" % time.strftime('%Y/%m/%d',time.gmtime(record.last_mod))
-
-        print ""
+            outr= "%-30s %30s %14s" % (
+                  record.title.encode('utf-8', 'replace')[:29],
+                  record.user.encode('utf-8', 'replace')[:29],
+                  time.strftime('%Y/%m/%d',time.gmtime(record.last_mod)))
+            if self.uuid:
+               print outr,record.uuid
+            else:
+               print outr
 
     def do_output(self, line=None):
         """
@@ -509,7 +503,7 @@ class InteractiveConsole(cmd.Cmd):
 
         print "TAB completition mode is %s" % self.tabcomp
 
-    def do_show(self, line, echo=True, passwd=False, uuid=False):
+    def do_show(self, line, echo=True, passwd=False, uuid=None):
         """
         Show the specified entry (including its password).
         A case insenstive search of titles is done, entries can also be specified as regular expressions.
@@ -528,10 +522,10 @@ class InteractiveConsole(cmd.Cmd):
         else:
             do_echo = echo
 
-        if self.uuid is not None:
-            do_uuid = self.uuid
-        else:
+        if uuid is not None:
             do_uuid = uuid
+        else:
+            do_uuid = self.uuid
 
         print ""
         for record in matches:
@@ -644,6 +638,8 @@ def main(argv):
     (options, args) = parser.parse_args()
 
     interactiveConsole = InteractiveConsole()
+    interactiveConsole.uuid = options.uuid
+    interactiveConsole.echo = options.echo
 
     if (len(args) < 1):
         if (config.recentvaults):
@@ -669,8 +665,6 @@ def main(argv):
         elif options.export:
             interactiveConsole.do_export()
         else:
-            interactiveConsole.uuid = options.uuid
-            interactiveConsole.echo = options.echo
             interactiveConsole.set_prompt()
             interactiveConsole.cmdloop()
 
