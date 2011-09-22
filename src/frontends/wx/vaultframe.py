@@ -84,20 +84,22 @@ class VaultFrame(wx.Frame):
             wx.ListCtrl.Refresh(self)
 
         def filter_record(self,record):
-            if record.title.lower().find(self._filterstring.lower()) >= 0:
-               return True
+            fstring=self._filterstring.lower()
 
-            if record.group.lower().find(self._filterstring.lower()) >= 0:
-               return True
-
-            if record.user.lower().find(self._filterstring.lower()) >= 0:
-               return True
+            # There is no flag to control searching in URL. Probably not
+            # necessary, unless you are searching for http or https
+            # (unlikely) and need to exclude the URLs.
+            #
+            for str in [record.title, record.group, record.user, record.url]:
+                if str.lower().find(fstring) >= 0:
+                   return True
 
             if config.search_notes:
-             if record.notes.lower().find(self._filterstring.lower()) >= 0:
-                return True
+               if record.notes.lower().find(fstring) >= 0:
+                  return True
 
             if config.search_passwd:
+	     # search in password is case sensitive.
              if record.passwd.find(self._filterstring) >= 0:
                 return True
 
