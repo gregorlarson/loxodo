@@ -609,6 +609,8 @@ Username : %s""" % (record.group.encode('utf-8', 'replace'),
                 matches.append(record)
             elif pat.match(record.group) is not None:
                 matches.append(record)
+            elif pat.match(record.url) is not None:
+                matches.append(record)
             elif pat.match(str(record.uuid)) is not None:
                 matches.append(record)
             elif pat.match("%s.%s [%s]" % (record.group, record.title, record.user)) is not None:
