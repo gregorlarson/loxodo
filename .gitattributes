@@ -1,0 +1,21 @@
+
+# If you keep you safe in a git repo, you might
+# want to look at change history.
+
+# In .../bin/loxodo
+#	#!/bin/sh
+#	export PYTHONIOENCODING=UTF-8
+#	exec python /path/to/loxodo.py "$@"
+
+# git config diff.psafe3.textconv "loxodo -x"
+*.psafe3 filter= diff=psafe3
+*.loxodo filter= diff=psafe3
+
+# The environment variable PWSAFE_PASS can then hold your
+# password. WARNING: don't keep your PWSAFE_PASS in the
+# environment any longer than you need to, and only on
+# single-user machines that you administer!!!
+# read a
+# export PWSAFE_PASS="$a"
+# loxodo -x my.psafe3
+# git log -p my.psafe3

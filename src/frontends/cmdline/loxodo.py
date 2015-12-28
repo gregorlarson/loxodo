@@ -76,9 +76,11 @@ class InteractiveConsole(cmd.Cmd):
         vault_action = "Opening"
         if not os.path.isfile(self.vault_file_name):
             vault_action = "Creating"
-        print "%s %s ..." % (vault_action, self.vault_file_name)
         try:
-            self.vault_password = getpass.getpass("Vault password: ")
+            self.vault_password = os.environ.get("PWSAFE_PASS")
+            if not self.vault_password:
+               print "%s %s ..." % (vault_action, self.vault_file_name)
+               self.vault_password = getpass.getpass("Vault password: ")
             if self.vault_password == "":
                 raise EOFError
         except EOFError:
@@ -183,7 +185,7 @@ class InteractiveConsole(cmd.Cmd):
         print "Entry Added, but vault not yet saved"
 
     def do_export(self, line=None):
-        print "Exporting file " + self.vault_file_name + "..."
+        #print "Exporting file " + self.vault_file_name + "..."
         self.vault.export(self.vault_password, self.vault_file_name)
 
     def prompt_password(self, old_password=None):
@@ -630,7 +632,7 @@ def main(argv):
     parser.add_option("-s", "--show", dest="do_show", default=None, action="store", type="string", help="Show entries matching REGEX", metavar="REGEX")
     parser.add_option("-i", "--interactive", dest="interactive", default=False, action="store_true", help="Use command line interface")
     parser.add_option("-n", "--new", dest="create_new_vault", default=False, action="store_true", help="Create and initialize new Vault.")
-    parser.add_option("-c", "--console_only", dest="console", default=False, action="store_true", help="Disable interaction with clipboard")
+    parser.add_option("-q", "--quiet", dest="quiet", default=False, action="store_true", help="Be less verbose")
     parser.add_option("-p", "--password", dest="passwd", default=False, action="store_true", help="Auto adds password to clipboard. (GTK Only)")
     parser.add_option("-e", "--echo", dest="echo", default=False, action="store_true", help="Passwords are displayed on the screen")
     parser.add_option("-u", "--uuid", dest="uuid", default=False, action="store_true", help="Show uuid while processing passwords")
@@ -670,8 +672,18 @@ def main(argv):
             interactiveConsole.set_prompt()
             interactiveConsole.cmdloop()
 
-    sys.exit(0)
+import traceback
+rc=0
+try:
+    main(sys.argv[1:])
+except:
+    # *** catch-all ***
+    rc=1
+    print >> sys.stderr, "cmdline exception on:",sys.argv[1:]
+    print >> sys.stderr, "sys.stdout.encoding:",sys.stdout.encoding
+    traceback.print_exc()
 
+#print >> sys.stderr, "cmdline done:",sys.argv[1:]
+sys.exit(rc)
 
-main(sys.argv[1:])
 
