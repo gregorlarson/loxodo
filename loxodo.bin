@@ -1,0 +1,23 @@
+#!/bin/sh
+# Install this to your bin directory, for example:
+#
+#	cp loxodo.bin /usr/local/bin/loxodo
+# or:
+# 	cp loxodo.bin ~/bin/loxodo
+# or:
+# 	cp loxodo.bin /site/bin/loxodo
+
+#
+# To allow python re-direct of stdout, we need to indicate an encoding
+#
+export PYTHONIOENCODING=UTF-8
+
+d=
+#
+# Change the line below to find the loxodo.py on your system:
+#
+for d in ~/lib/loxodo /usr/local/lib/loxodo /site/lib/loxodo ; do
+  [ -f "$d/loxodo.py" ] && break
+done
+
+exec python "$d/loxodo.py" "$@"
