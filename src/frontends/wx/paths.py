@@ -17,21 +17,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import wx
+import os
 
-from .wxlocale import _
-from .wxlocale import setup_wx_locale
-from .loadframe import LoadFrame
+from ...config import config
 
+def get_resourcedir():
+    adjacent_dir = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'resources')
+    if (os.path.exists(adjacent_dir)):
+        return adjacent_dir
+    else:
+        return os.path.join(os.path.dirname(os.path.realpath(config.get_basescript())), "resources")
 
-def main():
-    app = wx.App(False)
-    setup_wx_locale()
-    mainframe = LoadFrame(None, -1, "")
-    app.SetTopWindow(mainframe)
-    mainframe.Show()
-    app.MainLoop()
-
-
-main()
-
+def get_localedir():
+    adjacent_dir = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'locale')
+    if (os.path.exists(adjacent_dir)):
+        return adjacent_dir
+    else:
+        return os.path.join(os.path.dirname(os.path.realpath(config.get_basescript())), "locale")

@@ -25,6 +25,13 @@ import readline
 import cmd
 import re
 import time
+import csv
+try:
+    import pygtk
+    import gtk
+except ImportError:
+    pygtk = None
+    gtk = None
 
 from ...vault import Vault
 from ...config import config
@@ -120,7 +127,7 @@ class InteractiveConsole(cmd.Cmd):
             return
 
         print "\nCommands:"
-        print "  ".join(("ls", "show", 'add', 'mod', 'del', "save", 'quit', 'echo', 'sort', 'output', 'uuid', 'vi', 'tab', 'export'))
+        print "  ".join(("ls", "show", 'add', 'mod', 'del', "save", 'quit', 'echo', 'sort', 'output', 'uuid', 'vi', 'tab', 'export','import'))
         print
         print "echo is %s" % self.echo
         print "uuid is %s" % self.uuid
@@ -404,6 +411,32 @@ class InteractiveConsole(cmd.Cmd):
 
         print ""
 
+    def do_import(self, line):
+        """
+        Adds a CSV importer, based on CSV file
+
+        Example: /home/user/data.csv
+        Columns: Title,User,Password,URL,Group
+        """
+        if not line:
+            cmd.Cmd.do_help(self, "import")
+            return
+
+        data = csv.reader(open(line, 'rb'))
+        try:
+            for row in data:
+                entry = self.vault.Record.create()
+                entry.title = row[0]
+                entry.user = row[1]
+                entry.passwd = row[2]
+                entry.url = row[3]
+                entry.group = row[4]
+                self.vault.records.append(entry)
+            self.vault_modified = True
+            print "Import completed, but not saved."
+        except csv.Error, e:
+            sys.exit('file %s, line %d: %s' % (line, data.line_num, e))
+
     def do_ls(self, line):
         """
         Show contents of this Vault, one entry per line.
@@ -551,6 +584,11 @@ Username : %s""" % (record.group.encode('utf-8', 'replace'),
                 print "Last mod : %s" % time.strftime('%Y/%m/%d',time.gmtime(record.last_mod))
 
             print ""
+            if pygtk is not None and gtk is not None:
+                cb = gtk.clipboard_get()
+                if cb is not None:
+                  cb.set_text(record.passwd)
+                  cb.store()
 
     def complete_show(self, text, line, begidx, endidx):
         if not text:
